@@ -23,7 +23,6 @@ bool isPrime(int n)
     return true;
 }
 
-// returns -1 if the text is not a valid number
 int toNumber(string text)
 {
     if (text.empty() || text.length() > 9)
