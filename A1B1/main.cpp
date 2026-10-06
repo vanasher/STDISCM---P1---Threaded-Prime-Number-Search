@@ -162,6 +162,6 @@ int main(int argc, char *argv[])
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
 
-    cout << "Done." << endl;
+    cout << "End time: " << getTimeStamp() << endl;
     return 0;
 }
