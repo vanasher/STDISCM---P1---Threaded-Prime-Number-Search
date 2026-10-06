@@ -2,6 +2,7 @@
 
 
 **COMPILING AND RUNNING**
+
 **1. Set x and y by opening config.txt and editing the two values**
 
 
