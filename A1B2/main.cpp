@@ -7,21 +7,9 @@
 #include <chrono>
 #include <ctime>
 #include <cstdio>
+#include <cmath>
 
 using namespace std;
-
-bool isPrime(int n)
-{
-    if (n < 2)
-        return false;
-
-    for (int i = 2; i * i <= n; i++)
-    {
-        if (n % i == 0)
-            return false;
-    }
-    return true;
-}
 
 int toNumber(string text)
 {
@@ -122,14 +110,18 @@ string getTimeStamp()
     return string(result);
 }
 
-void searchRange(int start, int end)
+bool hasDivisor[1000];
+
+void testDivisors(int n, int start, int end, int slot)
 {
-    for (int n = start; n <= end; n++)
+    hasDivisor[slot] = false;
+
+    for (int d = start; d <= end; d++)
     {
-        if (isPrime(n))
+        if (n % d == 0)
         {
-            cout << "[" << getTimeStamp() << "] Thread " << this_thread::get_id()
-                 << " found prime: " << n << endl;
+            hasDivisor[slot] = true;
+            return;
         }
     }
 }
@@ -144,22 +136,41 @@ int main(int argc, char *argv[])
     cout << "No. of threads: " << x << ", searching 1 to " << y << endl;
     cout << "Start time: " << getTimeStamp() << endl;
 
-    vector<thread> threads;
-    int size = y / x;
-
-    for (int i = 0; i < x; i++)
+    for (int n = 1; n <= y; n++)
     {
-        int start = i * size + 1;
-        int end = (i + 1) * size;
-        // if not divisible, the last thread gets the remaining
-        if (i == x - 1)
-            end = y;
+        int last = sqrt(n);
+        int total = last - 1;
+        int size = total / x;
 
-        threads.push_back(thread(searchRange, start, end));
+        vector<thread> threads;
+        for (int i = 0; i < x; i++)
+        {
+            int start = 2 + i * size;
+            int end = start + size - 1;
+
+            // last thread takes whatever is left over
+            if (i == x - 1)
+                end = last;
+
+            threads.push_back(thread(testDivisors, n, start, end, i));
+        }
+
+        for (int i = 0; i < threads.size(); i++)
+            threads[i].join();
+
+        bool prime = true;
+        for (int i = 0; i < x; i++)
+        {
+            if (hasDivisor[i])
+                prime = false;
+        }
+
+        if (prime)
+        {
+            cout << "[" << getTimeStamp() << "] Thread " << this_thread::get_id()
+                 << " found prime: " << n << endl;
+        }
     }
-
-    for (int i = 0; i < threads.size(); i++)
-        threads[i].join();
 
     cout << "End time: " << getTimeStamp() << endl;
     return 0;
