@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <atomic>
+#include <algorithm>
 
 using namespace std;
 
