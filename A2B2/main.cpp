@@ -137,8 +137,7 @@ int main()
     if (!readConfig("../config.txt", x, y))
         return 1;
 
-    cout << "No. of threads: " << x << ", searching 1 to " << y << endl;
-    cout << "Start time: " << getTimeStamp() << endl;
+    string startTime = getTimeStamp();
     nextNumber = 2;
     results.resize(x);
 
@@ -158,6 +157,8 @@ int main()
     for (int i = 0; i < all.size(); i++)
         cout << "found prime: " << all[i] << endl;
 
+    cout << "No. of threads: " << x << ", searched 1 to " << y << endl;
+    cout << "Start time: " << startTime << endl;
     cout << "End time: " << getTimeStamp() << endl;
     return 0;
 }
