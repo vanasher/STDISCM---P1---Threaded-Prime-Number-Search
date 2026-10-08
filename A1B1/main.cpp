@@ -7,15 +7,18 @@
 #include <chrono>
 #include <ctime>
 #include <cstdio>
+#include <cstdint>
 
 using namespace std;
 
-bool isPrime(int n)
+mutex printLock;
+
+bool isPrime(uint64_t n)
 {
     if (n < 2)
         return false;
 
-    for (int i = 2; i * i <= n; i++)
+    for (uint64_t i = 2; i * i <= n; i++)
     {
         if (n % i == 0)
             return false;
@@ -23,20 +26,20 @@ bool isPrime(int n)
     return true;
 }
 
-int toNumber(string text)
+uint64_t toNumber(string text)
 {
-    if (text.empty() || text.length() > 9)
-        return -1;
+    if (text.empty() || text.length() > 19)
+        return 0;
 
     for (int i = 0; i < text.length(); i++)
     {
         if (text[i] < '0' || text[i] > '9')
-            return -1;
+            return 0;
     }
-    return stoi(text);
+    return stoull(text);
 }
 
-bool readConfig(string filename, int &x, int &y)
+bool readConfig(string filename, uint64_t &x, uint64_t &y)
 {
     ifstream file(filename);
     if (!file.is_open())
@@ -45,8 +48,8 @@ bool readConfig(string filename, int &x, int &y)
         return false;
     }
 
-    x = -1;
-    y = -1;
+    x = 0;
+    y = 0;
 
     string line;
     int lineNo = 0;
@@ -86,19 +89,16 @@ bool readConfig(string filename, int &x, int &y)
     }
     
     file.close();
-
     if (x < 1 || x > 1000)
     {
-        cout << "Error: x is missing or either too large or too small" << endl;
+        cout << "Error: x is missing or not a number between 1 and 1000" << endl;
         return false;
     }
-
-    if (y < 1 || y > 100000000)
+    if (y < 2 || y > 1000000000000)
     {
-        cout << "Error: y is missing or either too large or too small" << endl;
+        cout << "Error: y is missing or not a number between 2 and 1000000000000" << endl;
         return false;
     }
-
     if (x > y)
     {
         cout << "Error: x cannot be more than y" << endl;
@@ -113,18 +113,16 @@ string getTimeStamp()
     auto now = chrono::system_clock::now();
     time_t t = chrono::system_clock::to_time_t(now);
     int ms = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
-
     char timeText[16];
     strftime(timeText, sizeof(timeText), "%H:%M:%S", localtime(&t));
-
     char result[32];
     snprintf(result, sizeof(result), "%s.%03d", timeText, ms);
     return string(result);
 }
 
-void searchRange(int start, int end)
+void searchRange(uint64_t start, uint64_t end)
 {
-    for (int n = start; n <= end; n++)
+    for (uint64_t n = start; n <= end; n++)
     {
         if (isPrime(n))
         {
@@ -134,9 +132,9 @@ void searchRange(int start, int end)
     }
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-    int x, y;
+    uint64_t x, y;
 
     if (!readConfig("../config.txt", x, y))
         return 1;
@@ -145,19 +143,16 @@ int main(int argc, char *argv[])
     cout << "Start time: " << getTimeStamp() << endl;
 
     vector<thread> threads;
-    int size = y / x;
-
-    for (int i = 0; i < x; i++)
+    uint64_t size = y / x;
+    for (uint64_t i = 0; i < x; i++)
     {
-        int start = i * size + 1;
-        int end = (i + 1) * size;
-        // if not divisible, the last thread gets the remaining
+        uint64_t start = i * size + 1;
+        uint64_t end = (i + 1) * size;
         if (i == x - 1)
             end = y;
 
         threads.push_back(thread(searchRange, start, end));
     }
-
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
 

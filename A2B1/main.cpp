@@ -3,16 +3,12 @@
 #include <string>
 #include <vector>
 #include <thread>
-#include <mutex>
 #include <chrono>
 #include <ctime>
 #include <cstdio>
 #include <cstdint>
-#include <atomic>
 
 using namespace std;
-
-mutex printLock;
 
 bool isPrime(uint64_t n)
 {
@@ -90,6 +86,7 @@ bool readConfig(string filename, uint64_t &x, uint64_t &y)
     }
     
     file.close();
+
     if (x < 1 || x > 1000)
     {
         cout << "Error: x is missing or not a number between 1 and 1000" << endl;
@@ -98,6 +95,11 @@ bool readConfig(string filename, uint64_t &x, uint64_t &y)
     if (y < 2 || y > 1000000000000)
     {
         cout << "Error: y is missing or not a number between 2 and 1000000000000" << endl;
+        return false;
+    }
+    if (x > y)
+    {
+        cout << "Error: x cannot be more than y" << endl;
         return false;
     }
 
@@ -114,44 +116,51 @@ string getTimeStamp()
     char result[32];
     snprintf(result, sizeof(result), "%s.%03d", timeText, ms);
     return string(result);
-}
+} 
 
-atomic<uint64_t> nextNumber;
+vector< vector<Result> > results;
 
-void searchNumbers(uint64_t y)
+vector< vector<uint64_t> > results;
+
+void searchRange(uint64_t start, uint64_t end, uint64_t slot)
 {
-    while (true)
+    for (uint64_t n = start; n <= end; n++)
     {
-        uint64_t n = nextNumber++;
-
-        if (n > y)
-            return;
-
         if (isPrime(n))
-        {
-            printLock.lock();
-            cout << "[" << getTimeStamp() << "] Thread " << this_thread::get_id()
-                 << " found prime: " << n << endl;
-            printLock.unlock();
-        }
+            results[slot].push_back(n);
     }
 }
 
 int main()
 {
     uint64_t x, y;
+
     if (!readConfig("../config.txt", x, y))
         return 1;
+
     cout << "No. of threads: " << x << ", searching 1 to " << y << endl;
     cout << "Start time: " << getTimeStamp() << endl;
-    nextNumber = 2;
-    vector<thread> threads;
-    for (uint64_t i = 0; i < x; i++)
-        threads.push_back(thread(searchNumbers, y));
 
+    results.resize(x);
+
+    vector<thread> threads;
+    uint64_t size = y / x;
+
+    for (uint64_t i = 0; i < x; i++)
+    {
+        uint64_t start = i * size + 1;
+        uint64_t end = (i + 1) * size;
+        if (i == x - 1)
+            end = y;
+        threads.push_back(thread(searchRange, start, end, i));
+    }
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
-
+    for (uint64_t i = 0; i < x; i++)
+    {
+        for (int j = 0; j < results[i].size(); j++)
+            cout << "found prime: " << results[i][j] << endl;
+    }
     cout << "End time: " << getTimeStamp() << endl;
     return 0;
 }

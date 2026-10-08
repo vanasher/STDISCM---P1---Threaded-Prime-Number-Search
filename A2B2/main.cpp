@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <thread>
-#include <mutex>
 #include <chrono>
 #include <ctime>
 #include <cstdio>
@@ -11,8 +10,6 @@
 #include <atomic>
 
 using namespace std;
-
-mutex printLock;
 
 bool isPrime(uint64_t n)
 {
@@ -117,8 +114,8 @@ string getTimeStamp()
 }
 
 atomic<uint64_t> nextNumber;
-
-void searchNumbers(uint64_t y)
+vector< vector<uint64_t> > results;
+void searchNumbers(uint64_t y, uint64_t slot)
 {
     while (true)
     {
@@ -128,29 +125,37 @@ void searchNumbers(uint64_t y)
             return;
 
         if (isPrime(n))
-        {
-            printLock.lock();
-            cout << "[" << getTimeStamp() << "] Thread " << this_thread::get_id()
-                 << " found prime: " << n << endl;
-            printLock.unlock();
-        }
+            results[slot].push_back(n);
     }
 }
 
 int main()
 {
     uint64_t x, y;
+
     if (!readConfig("../config.txt", x, y))
         return 1;
+
     cout << "No. of threads: " << x << ", searching 1 to " << y << endl;
     cout << "Start time: " << getTimeStamp() << endl;
     nextNumber = 2;
+    results.resize(x);
+
     vector<thread> threads;
     for (uint64_t i = 0; i < x; i++)
-        threads.push_back(thread(searchNumbers, y));
-
+        threads.push_back(thread(searchNumbers, y, i));
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
+    vector<uint64_t> all;
+    for (uint64_t i = 0; i < x; i++)
+    {
+        for (int j = 0; j < results[i].size(); j++)
+            all.push_back(results[i][j]);
+    }
+    sort(all.begin(), all.end());
+
+    for (int i = 0; i < all.size(); i++)
+        cout << "found prime: " << all[i] << endl;
 
     cout << "End time: " << getTimeStamp() << endl;
     return 0;
