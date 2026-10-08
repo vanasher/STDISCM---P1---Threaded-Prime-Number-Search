@@ -117,9 +117,6 @@ string getTimeStamp()
     snprintf(result, sizeof(result), "%s.%03d", timeText, ms);
     return string(result);
 } 
-
-vector< vector<Result> > results;
-
 vector< vector<uint64_t> > results;
 
 void searchRange(uint64_t start, uint64_t end, uint64_t slot)
