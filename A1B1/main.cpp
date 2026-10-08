@@ -126,10 +126,10 @@ void searchRange(uint64_t start, uint64_t end)
     {
         if (isPrime(n))
         {
-            printLock.lock();
+            //printLock.lock();
             cout << "[" << getTimeStamp() << "] Thread " << this_thread::get_id()
                  << " found prime: " << n << "\n";
-            printLock.unlock();
+            //printLock.unlock();
         }
     }
 }
