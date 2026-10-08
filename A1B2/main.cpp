@@ -131,7 +131,7 @@ void searchNumbers(uint64_t y)
         {
             printLock.lock();
             cout << "[" << getTimeStamp() << "] Thread " << this_thread::get_id()
-                 << " found prime: " << n << endl;
+                 << " found prime: " << n << "\n";
             printLock.unlock();
         }
     }
@@ -142,17 +142,18 @@ int main()
     uint64_t x, y;
     if (!readConfig("../config.txt", x, y))
         return 1;
-    string startTime = getTimeStamp();
+
     nextNumber = 2;
     vector<thread> threads;
     for (uint64_t i = 0; i < x; i++)
         threads.push_back(thread(searchNumbers, y));
 
+    string startTime = getTimeStamp();
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
 
-    cout << "No. of threads: " << x << ", searched 1 to " << y << endl;
-    cout << "Start time: " << startTime << endl;
-    cout << "End time: " << getTimeStamp() << endl;
+    cout << "No. of threads: " << x << ", searched 1 to " << y << "\n";
+    cout << "Start time: " << startTime << "\n";
+    cout << "End time: " << getTimeStamp() << "\n";
     return 0;
 }

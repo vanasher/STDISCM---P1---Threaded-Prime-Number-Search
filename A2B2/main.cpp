@@ -131,19 +131,21 @@ void searchNumbers(uint64_t y, uint64_t slot)
 }
 
 int main()
-{
+{   
+    ios::sync_with_stdio(false);
     uint64_t x, y;
 
     if (!readConfig("../config.txt", x, y))
         return 1;
 
-    string startTime = getTimeStamp();
+    
     nextNumber = 2;
     results.resize(x);
 
     vector<thread> threads;
     for (uint64_t i = 0; i < x; i++)
         threads.push_back(thread(searchNumbers, y, i));
+    string startTime = getTimeStamp();
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
     vector<uint64_t> all;
@@ -155,10 +157,10 @@ int main()
     sort(all.begin(), all.end());
 
     for (int i = 0; i < all.size(); i++)
-        cout << "found prime: " << all[i] << endl;
-
-    cout << "No. of threads: " << x << ", searched 1 to " << y << endl;
-    cout << "Start time: " << startTime << endl;
-    cout << "End time: " << getTimeStamp() << endl;
+        cout << "found prime: " << all[i] << "\n";
+    string endTime = getTimeStamp();
+    cout << "No. of threads: " << x << ", searched 1 to " << y << "\n";
+    cout << "Start time: " << startTime << "\n";
+    cout << "End time: " << endTime << "\n";
     return 0;
 }
