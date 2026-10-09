@@ -95,9 +95,9 @@ bool readConfig(string filename, uint64_t &x, uint64_t &y)
         cout << "Error: x is missing or not a number between 1 and 1000" << endl;
         return false;
     }
-    if (y < 2 || y > 1000000000000)
+    if (y < 1 || y > 1000000000000)
     {
-        cout << "Error: y is missing or not a number between 2 and 1000000000000" << endl;
+        cout << "Error: y is missing or not a number between 1 and 1000000000000" << endl;
         return false;
     }
     if (x > y)
