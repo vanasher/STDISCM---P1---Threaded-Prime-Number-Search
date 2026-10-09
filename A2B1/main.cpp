@@ -7,6 +7,8 @@
 #include <ctime>
 #include <cstdio>
 #include <cstdint>
+#include <atomic>
+#include <mutex>
 
 using namespace std;
 
@@ -116,15 +118,24 @@ string getTimeStamp()
     char result[32];
     snprintf(result, sizeof(result), "%s.%03d", timeText, ms);
     return string(result);
-} 
-vector< vector<uint64_t> > results;
+}
 
-void searchRange(uint64_t start, uint64_t end, uint64_t slot)
+vector<uint64_t> all;
+mutex listLock;
+atomic<bool> go(false);
+
+void searchRange(uint64_t start, uint64_t end)
 {
+    while (!go)
+        this_thread::yield();
     for (uint64_t n = start; n <= end; n++)
     {
         if (isPrime(n))
-            results[slot].push_back(n);
+        {
+            listLock.lock();
+            all.push_back(n);
+            listLock.unlock();
+        }
     }
 }
 
@@ -136,7 +147,6 @@ int main()
     if (!readConfig("../config.txt", x, y))
         return 1;
 
-    results.resize(x);
     vector<thread> threads;
     uint64_t size = y / x;
 
@@ -146,17 +156,16 @@ int main()
         uint64_t end = (i + 1) * size;
         if (i == x - 1)
             end = y;
-        threads.push_back(thread(searchRange, start, end, i));
+        threads.push_back(thread(searchRange, start, end));
     }
     string startTime = getTimeStamp();
+    go = true;
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
     
-    for (uint64_t i = 0; i < x; i++)
-    {
-        for (int j = 0; j < results[i].size(); j++)
-            cout << "found prime: " << results[i][j] << "\n";
-    }
+    for (int i = 0; i < all.size(); i++)
+        cout << "found prime: " << all[i] << "\n";
+
     string endTime = getTimeStamp();
     cout << "No. of threads: " << x << ", searched 1 to " << y << "\n";
     cout << "Start time: " << startTime << "\n";

@@ -118,8 +118,13 @@ string getTimeStamp()
 
 atomic<uint64_t> nextNumber;
 
+atomic<bool> go(false);
+
 void searchNumbers(uint64_t y)
 {
+    while (!go)
+        this_thread::yield();
+
     while (true)
     {
         uint64_t n = nextNumber++;
@@ -129,10 +134,10 @@ void searchNumbers(uint64_t y)
 
         if (isPrime(n))
         {
-            //printLock.lock();
+            printLock.lock();
             cout << "[" << getTimeStamp() << "] Thread " << this_thread::get_id()
                  << " found prime: " << n << "\n";
-            //printLock.unlock();
+            printLock.unlock();
         }
     }
 }
@@ -150,6 +155,7 @@ int main()
         threads.push_back(thread(searchNumbers, y));
 
     string startTime = getTimeStamp();
+    go = true;
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
 

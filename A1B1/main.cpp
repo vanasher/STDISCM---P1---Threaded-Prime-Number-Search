@@ -8,6 +8,7 @@
 #include <ctime>
 #include <cstdio>
 #include <cstdint>
+#include <atomic>
 
 using namespace std;
 
@@ -120,16 +121,21 @@ string getTimeStamp()
     return string(result);
 }
 
+atomic<bool> go(false);
+
 void searchRange(uint64_t start, uint64_t end)
-{
+{   
+    while (!go)
+        this_thread::yield();
+    
     for (uint64_t n = start; n <= end; n++)
     {
         if (isPrime(n))
         {
-            //printLock.lock();
+            printLock.lock();
             cout << "[" << getTimeStamp() << "] Thread " << this_thread::get_id()
                  << " found prime: " << n << "\n";
-            //printLock.unlock();
+            printLock.unlock();
         }
     }
 }
@@ -154,6 +160,7 @@ int main()
         threads.push_back(thread(searchRange, start, end));
     }
     string startTime = getTimeStamp();
+    go = true;
     for (int i = 0; i < threads.size(); i++)
         threads[i].join();
     cout << "No. of threads: " << x << ", searched 1 to " << y << "\n";
