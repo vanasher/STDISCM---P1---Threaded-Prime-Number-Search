@@ -139,6 +139,7 @@ void searchNumbers(uint64_t y)
 
 int main()
 {
+    ios::sync_with_stdio(false);
     uint64_t x, y;
     if (!readConfig("../config.txt", x, y))
         return 1;

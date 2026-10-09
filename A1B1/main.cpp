@@ -136,6 +136,7 @@ void searchRange(uint64_t start, uint64_t end)
 
 int main()
 {
+    ios::sync_with_stdio(false);
     uint64_t x, y;
 
     if (!readConfig("../config.txt", x, y))
